@@ -1,0 +1,10 @@
+policies:
+  - name: vm-percentage-cpu
+    resource: azure.vm
+    filters:
+      - type: metric
+        metric: Percentage CPU
+        aggregation: average
+        op: gt
+        threshold: 75
+        timeframe: 2

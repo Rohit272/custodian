@@ -1,0 +1,9 @@
+accounts:
+- account_id: '749812993810'
+  aws_access_key_id: AKIA25FCWJ4JH44U7YFX
+  aws_secret_access_key: 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
+  name: cloud_custodian
+  regions:
+  - us-east-1
+  role: arn:aws:iam::749812993810:role/cloudcustodian_role
+  user: arn:aws:iam::749812993810:user/CloudCustodian

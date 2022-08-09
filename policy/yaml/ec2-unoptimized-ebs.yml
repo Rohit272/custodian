@@ -1,0 +1,8 @@
+policies:
+  - name: ec2-unoptimized-ebs
+    resource: ec2
+    filters:
+      - type: instance-attribute
+        attribute: ebsOptimized
+        key: "Value"
+        value: false

@@ -1,0 +1,7 @@
+policies:
+  - name: ec2-reboot-instances
+    resource: ec2
+    query:
+      - instance-state-name: running
+    actions:
+      - reboot

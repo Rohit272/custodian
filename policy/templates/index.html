@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Custodian</title>
+</head>
+<body>
+<div class="w3-container">
+  <h2>Policies </h2>
+
+  <table class="w3-table-all">
+    <thead>
+      <tr class="w3-blue">
+          <th>Id</th>
+          <th>Policy Name</th>
+          <th>Subscription Id</th>
+          <th>Descrition</th>
+          <th>File Path</th>
+          <th>Action</th>
+           <th></th>
+          <th></th>
+      </tr>
+    </thead>
+      {% for x in policy %}
+     <tr>
+        <td>{{ x.id }}</td>
+        <td>{{ x.name }}</td>
+         <td>{{ x.subscription_id }}</td>
+        <td>{{ x.description }}</td>
+         <td>{{ x.file_path }}</td>
+         <td><a class="w3-button w3-teal w3-round-xlarge w3-hover-blue" href="update/{{ x.id }}">Update</a></td>
+         <td><a class="w3-button w3-pink w3-round-xlarge w3-hover-blue" href="delete/{{ x.id }}">Delete</a></td>
+         <td><a class="w3-button w3-pink w3-round-xlarge w3-hover-blue" href="execute/{{ x.id }}">Execute</a></td>
+     </tr>
+{% endfor %}
+  </table>
+    <p><a class="w3-button w3-blue w3-round-xxlarge w3-hover-pink" href="create/">Create Policy</a></p>
+</div>
+</body>
+</html>
