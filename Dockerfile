@@ -13,6 +13,7 @@ RUN pip install --upgrade pip
 RUN apk add --update --no-cache --virtual .tmp-build-deps \
       build-base gcc python3-dev  musl-dev libffi-dev openssl-dev cargo
 RUN apk add vim
+RUN pip install azure-cli
 COPY ./requirements.txt /usr/src/custodian
 RUN pip install -r requirements.txt
 
