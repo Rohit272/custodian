@@ -2,18 +2,24 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import loader
 from django.urls import reverse
+from django.core.files.storage import FileSystemStorage
 from .models import Policy
 
 import os
+import mimetypes
+import datetime
+import subprocess
 import logging
-#import c7n_azure
-#from c7n.commands import run
-#from c7n.config import Config
+import yaml
+import c7n_azure
+from c7n.commands import run
+from c7n.config import Config
 
 
 
 # Create your views here.
-
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+logger = logging.getLogger(__name__)
 def index(request):
     #policy = Policy.objects.all().values()
     policy = Policy.objects.raw('SELECT * FROM policy_policy where is_active=1')
@@ -27,19 +33,25 @@ def create(request):
     template = loader.get_template('create.html')
     return HttpResponse(template.render({}, request))
 
+def upload_file(request):
+    myfile = request.FILES['myfile']
+    fs = FileSystemStorage()
+    filepath = THIS_DIR+'/yaml/azure/'+myfile.name
+    if os.path.exists(filepath):
+        os.remove(filepath)
+    filename = fs.save(filepath, myfile)
+    return '/yaml/azure/' + myfile.name
+
 def addrecord(request):
-    policy = Policy(name=request.POST['name'], subscription_id=request.POST['subscription_id'],description=request.POST['description'], file_path=request.POST['file_path'])
+    if request.method == 'POST' and request.FILES['myfile']:
+        filepath = upload_file(request)
+    policy = Policy(name=request.POST['name'], subscription_id=request.POST['subscription_id'],description=request.POST['description'], file_path=filepath)
     policy.save()
     return HttpResponseRedirect(reverse('index'))
 
 def set_subscription(subscription_id):
     cmd = "az account set -s "+subscription_id
     returned_value = os.system(cmd)
-    #create directory if dosent exist
-    #path = "./output/"+subscription_id
-    #isExist = os.path.exists(path)
-    #if not isExist:
-    #    os.makedirs(path)
     return returned_value;
 
 def delete(request, id):
@@ -59,21 +71,19 @@ def updaterecord(request, id):
     policy.name = request.POST['name']
     policy.subscription_id = request.POST['subscription_id']
     policy.description = request.POST['description']
-    policy.file_path = request.POST['file_path']
     policy.save()
     return HttpResponseRedirect(reverse('index'))
 
 def execute_policy(request, id):
-    
+
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     policy = Policy.objects.get(id=id)
     result = set_subscription(policy.subscription_id)
     ymlfile = THIS_DIR+policy.file_path
-    logger = logging.getLogger(__name__)
     logger.info('-----------------Ploicy Ececution Started------------------------')
     THIS_DIR=os.path.dirname(os.path.abspath(__file__))
     logger.info(ymlfile)
-    OUT_DIR = THIS_DIR+'./output/'+policy.subscription_id
+    OUT_DIR = THIS_DIR+'/output/'+policy.subscription_id
     #assumed_role = 'arn:aws:iam::749812993810:role/cloudcustodian_role'
     filename= THIS_DIR+policy.file_path
     default_c7n_config = {
@@ -91,22 +101,67 @@ def execute_policy(request, id):
         run(run_config)
     except:
         return HttpResponse("Exception occurred.")
-    
+
     return HttpResponse("Policy executed successfully....")
 
+def output_dir(request, id):
+    policy = Policy.objects.get(id=id)
+    dir_path = THIS_DIR + '/output/'+policy.subscription_id
+    res = []
+    # Iterate directory
+    for path in os.listdir(dir_path):
+        if os.path.isdir(os.path.join(dir_path, path)):
+            res.append(path)
 
-def policy_log_output(request, id):
-
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    lines=""
-    with open(THIS_DIR+"/output/ec2-unoptimized-ebs/resources.json", "r") as file:
-        next_line = file.readline()
-        while next_line:
-            lines =lines+"<br>"+next_line
-            next_line = file.readline()
-
-    template = loader.get_template('policyoutput.html')
+    template = loader.get_template('output_dir.html')
     context = {
-        'output': lines,
+        'subscription_id': policy.subscription_id,
+        'directory': res,
     }
     return HttpResponse(template.render(context, request))
+
+def output_files(request, subscription, directory):
+    dir_path = THIS_DIR + '/output/'+subscription+'/'+directory
+    files = []
+
+    for filename in os.listdir(dir_path):
+        file = os.path.join(dir_path, filename)
+        if os.path.isfile(file):
+            c_time = os.path.getctime(file)
+            m_time = os.path.getmtime(file)
+            files.append({"name": filename, "created_datetime":datetime.datetime.fromtimestamp(c_time), "modified_datetime":datetime.datetime.fromtimestamp(m_time)})
+
+    template = loader.get_template('output_files.html')
+    context = {
+        'policy': directory,
+        'subscription': subscription,
+        'files': files,
+    }
+    return HttpResponse(template.render(context, request))
+
+def output_download(request, subscription, directory, filename):
+    filepath = THIS_DIR + '/output/'+subscription+'/'+directory+'/' + filename
+    logger.info(filepath)
+    path = open(filepath, 'r')
+    # Set the mime type
+    mime_type, _ = mimetypes.guess_type(filepath)
+    # Set the return value of the HttpResponse
+    response = HttpResponse(path, content_type=mime_type)
+    # Set the HTTP header for sending to browser
+    response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response
+
+def authenticate_sp_form(request):
+    template = loader.get_template('authenticatespform.html')
+    return HttpResponse(template.render({}, request))
+
+def authenticate_service_principal(request):
+    cmd = "az login --service-principal -u " + request.POST['app_id'] + " -p "+request.POST['app_secret']+" --tenant " + request.POST['tenant_id']
+    #cmd="az --version"
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+    (output, err) = p.communicate()
+    p_status = p.wait()
+    if p_status == 0:
+        return HttpResponse("Success : Service Principal authenticated successfully.")
+
+    return HttpResponse("Failed: Service Principal could not be authenticated, please check parameters or logs.")

@@ -1,7 +1,0 @@
-policies:
-  - name: ec2-start-stopped-instances
-    resource: ec2
-    query:
-      - instance-state-name: stopped
-    actions:
-      - start

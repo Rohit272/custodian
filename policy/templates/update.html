@@ -73,7 +73,7 @@ a {
 <form action="updaterecord/{{ policy.id }}" method="post"">
     {% csrf_token %}
   <div class="container">
-    <h1>Update Policy</h1>
+    <h2>Update Policy</h2>
     <p>Please edit this form to update a policy.</p>
     <hr>
 
@@ -81,11 +81,8 @@ a {
     <input type="text"  name="name" value="{{ policy.name }}">
     <label for="subscription_id"><b>Subscription Id</b></label>
     <input type="text"  name="subscription_id"  value="{{ policy.subscription_id }}">
-    <label for="file_path"><b>File Path</b></label>
-    <input type="text"  name="file_path"  value="{{ policy.file_path }}">
       <label for="description"><b>Description</b></label>
     <input type="text"  name="description"  value="{{ policy.description }}">
-    <hr>
 
     <button type="submit" class="w3-blue registerbtn ">Update</button>
   </div>

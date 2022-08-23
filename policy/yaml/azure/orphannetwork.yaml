@@ -1,7 +1,0 @@
-policies:
-  - name: orphaned-nic
-    resource: azure.networkinterface
-    filters:
-      - type: value
-        key: properties.virtualMachine
-        value: null

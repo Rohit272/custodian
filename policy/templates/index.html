@@ -21,6 +21,7 @@
           <th>Action</th>
            <th></th>
           <th></th>
+          <th></th>
       </tr>
     </thead>
       {% for x in policy %}
@@ -31,12 +32,15 @@
         <td>{{ x.description }}</td>
          <td>{{ x.file_path }}</td>
          <td><a class="w3-button w3-teal w3-round-xlarge w3-hover-blue" href="update/{{ x.id }}">Update</a></td>
+         <td><a class="w3-button w3-teal w3-round-xlarge w3-hover-blue" href="output/dir/{{ x.id }}">Output</a></td>
          <td><a class="w3-button w3-pink w3-round-xlarge w3-hover-blue" href="delete/{{ x.id }}">Delete</a></td>
          <td><a class="w3-button w3-pink w3-round-xlarge w3-hover-blue" href="execute/{{ x.id }}">Execute</a></td>
+
      </tr>
 {% endfor %}
   </table>
-    <p><a class="w3-button w3-blue w3-round-xxlarge w3-hover-pink" href="create/">Create Policy</a></p>
+    <p><a class="w3-button w3-blue w3-round-xxlarge w3-hover-pink" href="create/">Create Policy</a>
+    <a class="w3-button w3-blue w3-round-xxlarge w3-hover-pink" href="sp/">Authenticate Service Principal</a></p>
 </div>
 </body>
 </html>

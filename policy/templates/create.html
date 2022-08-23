@@ -69,26 +69,25 @@ a {
 </style>
 </head>
 <body>
-
-<form action="addrecord/" method="post">
+{% load static %}
+{% block content %}
+<form method="post" enctype="multipart/form-data"  action="addrecord/">
     {% csrf_token %}
   <div class="container">
-    <h1>Create Policy</h1>
+    <h3>Create Policy</h3>
     <hr>
-
     <label for="name"><b>Policy Name</b></label>
     <input type="text"  name="name" required>
-    <label for="name"><b>Subscription Id</b></label>
+    <label for="name"><b>Subscription Id *</b></label>
     <input type="text"  name="subscription_id" required>
-      <label for="file_path"><b>File Path</b></label>
-    <input type="text" name="file_path" required>
     <label for="description"><b>Description</b></label>
     <input type="text" name="description"  required>
-    <hr>
-
+    <label for="yaml_file"><b> Policy YAML File : </b></label>
+    <input type="file" name="myfile">
     <button type="submit" class="w3-blue registerbtn ">Create</button>
   </div>
-</form>
 
+</form>
+{% endblock %}
 </body>
 </html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Custodian</title>
+</head>
+<body>
+<div class="w3-container">
+  <h2>Policy Output </h2>
+    <h5>Policy :  {{ policy }}</h5>
+  <table class="w3-table-all">
+    <thead>
+      <tr class="w3-blue">
+          <th></th>
+          <th>Policy Output File</th>
+          <th>Created Datetime</th>
+          <th>Last Modified Datetime</th>
+          <th></th>
+          <th></th>
+      </tr>
+    </thead>
+      {% for x in files %}
+     <tr>
+         <td> </td>
+        <td> {{ x.name }}</td>
+        <td> {{ x.created_datetime }}</td>
+         <td> {{ x.modified_datetime }}</td>
+         <td><a href="../download/{{subscription}}/{{ policy }}/{{ x.name }}">Download</a></td>
+         <td> </td>
+     </tr>
+{% endfor %}
+  </table>
+</div>
+</body>
+</html>

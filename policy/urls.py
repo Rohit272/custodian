@@ -9,5 +9,9 @@ urlpatterns = [
     path('update/<int:id>', views.update, name='update'),
     path('update/updaterecord/<int:id>', views.updaterecord, name='updaterecord'),
     path('execute/<int:id>', views.execute_policy, name='execute'),
-    path('policylogoutput/<int:id>', views.policy_log_output, name='policylogoutput'),
+    path('output/dir/<int:id>', views.output_dir, name='output_dir'),
+    path('output/dir/files/<str:subscription>/<str:directory>', views.output_files, name='output_files'),
+    path('output/dir/files/download/<str:subscription>/<str:directory>/<str:filename>/', views.output_download, name='output_download'),
+    path('sp/', views.authenticate_sp_form, name='authenticate_sp_form'),
+    path('sp/authenticate/', views.authenticate_service_principal, name='authenticate'),
 ]

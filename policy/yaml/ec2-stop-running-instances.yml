@@ -1,7 +1,0 @@
-policies:
-  - name: ec2-stop-running-instances
-    resource: ec2
-    query:
-      - instance-state-name: running
-    actions:
-      - stop
