@@ -68,24 +68,27 @@ def update(request, id):
     return HttpResponse(template.render(context, request))
 def updaterecord(request, id):
     policy = Policy.objects.get(id=id)
-    policy.name = request.POST['name']
     policy.subscription_id = request.POST['subscription_id']
     policy.description = request.POST['description']
     policy.save()
     return HttpResponseRedirect(reverse('index'))
 
-def execute_policy(request, id):
+def execute_policy(request, subscription, policyname):
 
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    policy = Policy.objects.get(id=id)
-    result = set_subscription(policy.subscription_id)
-    ymlfile = THIS_DIR+policy.file_path
+
+    policy = Policy.objects.raw("SELECT * FROM policy_policy where is_active=1 and subscription_id='"+subscription+"' and name= '"+policyname+"' LIMIT 1 ")
+    if len(policy) == 0 :
+        return HttpResponse("No record found, subscription id or policy name not valid",  status=404)
+
+    result = set_subscription(policy[0].subscription_id)
+    ymlfile = THIS_DIR+policy[0].file_path
     logger.info('-----------------Ploicy Ececution Started------------------------')
     THIS_DIR=os.path.dirname(os.path.abspath(__file__))
     logger.info(ymlfile)
-    OUT_DIR = THIS_DIR+'/output/'+policy.subscription_id
+    OUT_DIR = THIS_DIR+'/output/'+policy[0].subscription_id
     #assumed_role = 'arn:aws:iam::749812993810:role/cloudcustodian_role'
-    filename= THIS_DIR+policy.file_path
+    filename= THIS_DIR+policy[0].file_path
     default_c7n_config = {
         'skip-validation': True,
         'vars': None,
@@ -98,11 +101,13 @@ def execute_policy(request, id):
     run_config = Config.empty(**default_c7n_config)
     logger.info('Running policy: '+filename)
     try:
-        run(run_config)
+        rsl = run(run_config)
+        resp = output_view(request, policy[0].subscription_id, policy[0].name, 'resources.json')
     except:
-        return HttpResponse("Exception occurred.")
+        return HttpResponse("Exception occurred while executing policy.",  status=500)
 
-    return HttpResponse("Policy executed successfully....")
+
+    return HttpResponse(resp)
 
 def output_dir(request, id):
     policy = Policy.objects.get(id=id)
@@ -149,6 +154,16 @@ def output_download(request, subscription, directory, filename):
     response = HttpResponse(path, content_type=mime_type)
     # Set the HTTP header for sending to browser
     response['Content-Disposition'] = "attachment; filename=%s" % filename
+    return response
+
+def output_view(request, subscription, directory, filename):
+    filepath = THIS_DIR + '/output/'+subscription+'/'+directory+'/' + filename
+    logger.info(filepath)
+    path = open(filepath, 'r')
+    mime_type, _ = mimetypes.guess_type(filepath)
+    lines = path.readlines()
+    cont = '\t'.join([line.strip() for line in lines])
+    response = HttpResponse(cont, content_type=mime_type, status=200)
     return response
 
 def authenticate_sp_form(request):
